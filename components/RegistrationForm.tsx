@@ -20,7 +20,6 @@ interface FormData {
   address: string;
   nomPdv: string;
   productsPurchased: number | '';
-  selectedGift: string;
   productDetails: Record<string, number>;
 }
 
@@ -32,7 +31,6 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
     address: '',
     nomPdv: '',
     productsPurchased: '',
-    selectedGift: '',
     productDetails: {}
   });
 
@@ -44,10 +42,6 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
     }
     if (!formData.productsPurchased || formData.productsPurchased < 1) {
       alert("Veuillez entrer une quantité valide (minimum 1).");
-      return;
-    }
-    if (formData.productsPurchased === 1 && !formData.selectedGift) {
-      alert("Veuillez sélectionner le cadeau remis.");
       return;
     }
     onComplete(formData);
@@ -66,22 +60,10 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
       const newDetails = { ...prev.productDetails, [variant]: newQty };
       const newTotal = Object.values(newDetails).reduce((acc, val) => acc + val, 0);
 
-      let gift = prev.selectedGift;
-      if (newTotal === 1) {
-        gift = ''; // Require explicit selection between Pen / Doming
-      } else if (newTotal === 2) {
-        gift = 'Notebook';
-      } else if (newTotal >= 3) {
-        gift = 'TNT Bag';
-      } else {
-        gift = '';
-      }
-
       return {
         ...prev,
         productDetails: newDetails,
-        productsPurchased: newTotal > 0 ? newTotal : '',
-        selectedGift: gift
+        productsPurchased: newTotal > 0 ? newTotal : ''
       };
     });
   };
@@ -171,33 +153,6 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
             <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white' }}>{formData.productsPurchased || 0}</span>
           </div>
 
-          {formData.productsPurchased === 1 && (
-            <div style={{ marginTop: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'white' }}>
-                Cadeau remis :
-              </label>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="selectedGift" value="Pen" checked={formData.selectedGift === 'Pen'} onChange={handleChange} />
-                  Stylo (Pen)
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                  <input type="radio" name="selectedGift" value="Doming" checked={formData.selectedGift === 'Doming'} onChange={handleChange} />
-                  Doming
-                </label>
-              </div>
-            </div>
-          )}
-
-          {typeof formData.productsPurchased === 'number' && formData.productsPurchased > 1 && (
-            <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Cadeau automatique :</p>
-              <p style={{ margin: '0.25rem 0 0 0', fontWeight: 'bold', color: 'var(--primary-glow)' }}>
-                {formData.selectedGift === 'Notebook' ? 'Carnet (Notebook)' : 'Sac TNT (TNT Bag)'}
-              </p>
-            </div>
-          )}
-
           {formData.productsPurchased && (
             <div style={{ marginTop: '0.5rem', textAlign: 'right' }}>
               <span style={{ fontSize: '0.875rem', color: 'var(--secondary)' }}>
@@ -234,7 +189,7 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
             boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)',
           }}
         >
-          S'inscrire et Découvrir mon Cadeau
+          Valider la participation
         </button>
       </form>
     </div>

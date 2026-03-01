@@ -13,7 +13,6 @@ interface Participant {
     products_purchased: number;
     product_details?: Record<string, number>;
     chances: number;
-    prize: string;
     created_at: string;
 }
 
@@ -28,18 +27,10 @@ const CHAMIA_VARIANTS = [
     'CHAMIA 3KG VANILLE',
 ];
 
-interface Stock {
-    Pen: number;
-    Doming: number;
-    Notebook: number;
-    'TNT Bag': number;
-}
-
 export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [passcode, setPasscode] = useState('');
     const [participants, setParticipants] = useState<Participant[]>([]);
-    const [stockByPdv, setStockByPdv] = useState<Record<string, Stock>>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [selectedPdv, setSelectedPdv] = useState<string>('Tous');
@@ -91,16 +82,11 @@ export default function AdminDashboard() {
                     products_purchased: p.products_purchased || p.productsPurchased || 0,
                     product_details: p.product_details || {},
                     chances: p.chances || 0,
-                    prize: p.prize || '',
                     created_at: p.created_at || p.date || new Date().toISOString()
                 }));
 
                 setParticipants(normalizedData);
             }
-
-            // Load Stock from localStorage always
-            const localStock = JSON.parse(localStorage.getItem('tombola_stock') || '{}');
-            setStockByPdv(localStock);
 
         } catch (err: any) {
             console.error('Error fetching data:', err);
@@ -111,24 +97,19 @@ export default function AdminDashboard() {
     };
 
     // Derived State for Filtering
-    const availablePdvs = Array.from(new Set([
-        ...participants.map(p => p.nom_pdv).filter(Boolean),
-        ...Object.keys(stockByPdv)
-    ])).sort();
+    const availablePdvs = Array.from(new Set(
+        participants.map(p => p.nom_pdv).filter(Boolean)
+    )).sort();
 
     const filteredParticipants = selectedPdv === 'Tous'
         ? participants
         : participants.filter(p => p.nom_pdv === selectedPdv);
 
-    const filteredStockByPdv = selectedPdv === 'Tous'
-        ? stockByPdv
-        : (stockByPdv[selectedPdv] ? { [selectedPdv]: stockByPdv[selectedPdv] } : {});
-
     const exportToCSV = () => {
         const dataToExport = selectedPdv === 'Tous' ? participants : filteredParticipants;
         if (dataToExport.length === 0) return;
 
-        const headers = ['Prénom', 'Nom', 'Téléphone', 'Adresse', 'Point de Vente', 'Total Produits', ...CHAMIA_VARIANTS, 'Chances', 'Cadeau', 'Date'];
+        const headers = ['Prénom', 'Nom', 'Téléphone', 'Adresse', 'Point de Vente', 'Total Produits', ...CHAMIA_VARIANTS, 'Chances', 'Date'];
         const rows = dataToExport.map(p => {
             const details = p.product_details || {};
             return [
@@ -140,7 +121,6 @@ export default function AdminDashboard() {
                 p.products_purchased.toString(),
                 ...CHAMIA_VARIANTS.map(v => (details[v] || 0).toString()),
                 p.chances.toString(),
-                p.prize,
                 new Date(p.created_at).toLocaleString()
             ];
         });
@@ -227,7 +207,6 @@ export default function AdminDashboard() {
             try {
                 // Clear local storage
                 localStorage.removeItem('tombola_participants');
-                localStorage.removeItem('tombola_stock');
 
                 // If Supabase is configured, also attempt to clear it
                 const isConfigured =
@@ -245,9 +224,8 @@ export default function AdminDashboard() {
 
                 // Update UI state
                 setParticipants([]);
-                setStockByPdv({});
                 setWinnersByPdv({});
-                alert("Toutes les données ont été effacées et le stock a été réinitialisé.");
+                alert("Toutes les données de participation ont été effacées.");
 
             } catch (err) {
                 console.error("Erreur lors de la réinitialisation:", err);
@@ -324,37 +302,6 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            <h2 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Stock Restant (Par PDV)</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                {Object.keys(filteredStockByPdv).length === 0 ? (
-                    <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center', opacity: 0.5 }}>
-                        Aucune donnée de stock générée
-                    </div>
-                ) : (
-                    Object.entries(filteredStockByPdv).map(([pdv, pdvStock]) => (
-                        <div key={pdv} className="glass-card" style={{ padding: '1.5rem' }}>
-                            <div style={{ fontSize: '1rem', color: 'white', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                                📍 {pdv}
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Stylos:</span> <span style={{ color: pdvStock.Pen < 10 ? '#ef4444' : 'var(--primary-glow)', fontWeight: 'bold' }}>{pdvStock.Pen}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Domings:</span> <span style={{ color: pdvStock.Doming < 10 ? '#ef4444' : 'var(--primary-glow)', fontWeight: 'bold' }}>{pdvStock.Doming}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Carnets:</span> <span style={{ color: pdvStock.Notebook < 10 ? '#ef4444' : 'var(--primary-glow)', fontWeight: 'bold' }}>{pdvStock.Notebook}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Sacs TNT:</span> <span style={{ color: pdvStock['TNT Bag'] < 10 ? '#ef4444' : 'var(--primary-glow)', fontWeight: 'bold' }}>{pdvStock['TNT Bag']}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
-
             <div className="glass-card" style={{ overflowX: 'auto', width: '100%' }}>
                 {loading ? (
                     <div style={{ padding: '2rem', textAlign: 'center' }}>Chargement...</div>
@@ -370,7 +317,6 @@ export default function AdminDashboard() {
                                 <th style={thStyle}>Produits</th>
                                 <th style={thStyle}>Détails Produits</th>
                                 <th style={thStyle}>Chances</th>
-                                <th style={thStyle}>Cadeau</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -391,9 +337,6 @@ export default function AdminDashboard() {
                                             : '-'}
                                     </td>
                                     <td style={tdStyle}><strong>{p.chances}</strong></td>
-                                    <td style={tdStyle}>
-                                        <span style={prizeBadgeStyle}>{p.prize}</span>
-                                    </td>
                                 </tr>
                             ))}
                             {filteredParticipants.length === 0 && (

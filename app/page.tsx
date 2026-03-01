@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import RegistrationForm from '@/components/RegistrationForm';
-import InstantWin from '@/components/InstantWin';
 
 export default function Home() {
-  const [step, setStep] = useState<'register' | 'reveal'>('register');
-  const [prize, setPrize] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,29 +14,6 @@ export default function Home() {
 
     try {
       const chances = data.productsPurchased === 1 ? 1 : 3;
-      const selectedGift = data.selectedGift;
-
-      // Stock management per PDV
-      let allStock = JSON.parse(localStorage.getItem('tombola_stock') || '{}');
-      const pdv = data.nomPdv;
-
-      // Initialize PDV stock if it doesn't exist
-      if (!allStock[pdv]) {
-        allStock[pdv] = {
-          Pen: 50,
-          Doming: 50,
-          Notebook: 100,
-          'TNT Bag': 50
-        };
-      }
-
-      const pdvStock = allStock[pdv];
-
-      if (selectedGift && pdvStock[selectedGift] !== undefined) {
-        pdvStock[selectedGift] = Math.max(0, pdvStock[selectedGift] - 1);
-        allStock[pdv] = pdvStock; // Update back
-        localStorage.setItem('tombola_stock', JSON.stringify(allStock));
-      }
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
@@ -55,8 +30,7 @@ export default function Home() {
             nom_pdv: data.nomPdv,
             products_purchased: data.productsPurchased,
             product_details: data.productDetails,
-            chances: chances,
-            prize: selectedGift
+            chances: chances
           }]);
 
         if (dbError) throw dbError;
@@ -73,14 +47,13 @@ export default function Home() {
           products_purchased: data.productsPurchased,
           product_details: data.productDetails,
           chances: chances,
-          prize: selectedGift,
           created_at: new Date().toISOString()
         });
         localStorage.setItem('tombola_participants', JSON.stringify(participants));
       }
 
-      setPrize(selectedGift);
-      setStep('reveal');
+      setSuccessMessage("Participation enregistrée avec succès !");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       console.error("Error saving data:", err);
       setError("Désolé, une erreur est survenue. Veuillez réessayer.");
@@ -113,10 +86,16 @@ export default function Home() {
           <div className="glass-card" style={{ padding: '2rem', textAlign: 'center' }}>
             <div className="gradient-text" style={{ fontSize: '1.25rem' }}>Traitement en cours...</div>
           </div>
-        ) : step === 'register' ? (
-          <RegistrationForm onComplete={handleRegistrationComplete} />
+        ) : successMessage ? (
+          <div className="glass-card animate-fade-in" style={{ padding: '3rem', textAlign: 'center', maxWidth: '400px' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✅</div>
+            <h2 className="gradient-text" style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+              {successMessage}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)' }}>Le formulaire est prêt pour le prochain participant.</p>
+          </div>
         ) : (
-          <InstantWin prize={prize} />
+          <RegistrationForm onComplete={handleRegistrationComplete} />
         )}
       </section>
 
