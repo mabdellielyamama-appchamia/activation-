@@ -16,15 +16,22 @@ interface Participant {
     created_at: string;
 }
 
-const CHAMIA_VARIANTS = [
-    'CHAMIA 150 G PISTACHE',
-    'CHAMIA 150 G VANILLE',
-    'CHAMIA 350 G PISTACHE',
-    'CHAMIA 350 G VANILLE',
-    'CHAMIA 700 G PISTACHE',
-    'CHAMIA 700 G VANILLE',
-    'CHAMIA 3KG PISTACHE',
-    'CHAMIA 3KG VANILLE',
+const PRODUCT_VARIANTS = [
+    'AMANDE 30 G',
+    'AMANDE 70 G',
+    'AMANDE 140 G',
+    'CAJOU 30 G',
+    'CAJOU 70 G',
+    'CAJOU 140 G',
+    'PISTACHE 30 G',
+    'PISTACHE 70 G',
+    'PISTACHE 140 G',
+    'MIX GOLD 70 G',
+    'MIX GOLD 140 G',
+    'MIX CLASSIC 70 G',
+    'MIX CLASSIC 140 G',
+    'MIX ENERGY 70 G',
+    'MIX ENERGY 140 G',
 ];
 
 export default function AdminDashboard() {
@@ -109,7 +116,7 @@ export default function AdminDashboard() {
         const dataToExport = selectedPdv === 'Tous' ? participants : filteredParticipants;
         if (dataToExport.length === 0) return;
 
-        const headers = ['Prénom', 'Nom', 'Téléphone', 'Adresse', 'Point de Vente', 'Total Produits', ...CHAMIA_VARIANTS, 'Chances', 'Date'];
+        const headers = ['Prénom', 'Nom', 'Téléphone', 'Adresse', 'Point de Vente', 'Total Produits', ...PRODUCT_VARIANTS, 'Chances', 'Date'];
         const rows = dataToExport.map(p => {
             const details = p.product_details || {};
             return [
@@ -119,7 +126,7 @@ export default function AdminDashboard() {
                 p.address,
                 p.nom_pdv,
                 p.products_purchased.toString(),
-                ...CHAMIA_VARIANTS.map(v => (details[v] || 0).toString()),
+                ...PRODUCT_VARIANTS.map(v => (details[v] || 0).toString()),
                 p.chances.toString(),
                 new Date(p.created_at).toLocaleString()
             ];
@@ -332,7 +339,7 @@ export default function AdminDashboard() {
                                         {p.product_details && Object.keys(p.product_details).length > 0
                                             ? Object.entries(p.product_details)
                                                 .filter(([_, qty]) => qty > 0)
-                                                .map(([variant, qty]) => `${qty}x ${variant.replace('CHAMIA ', '')}`)
+                                                .map(([variant, qty]) => `${qty}x ${variant}`)
                                                 .join(', ')
                                             : '-'}
                                     </td>

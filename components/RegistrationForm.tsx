@@ -2,15 +2,22 @@
 
 import { useState } from 'react';
 
-export const CHAMIA_VARIANTS = [
-  'CHAMIA 150 G PISTACHE',
-  'CHAMIA 150 G VANILLE',
-  'CHAMIA 350 G PISTACHE',
-  'CHAMIA 350 G VANILLE',
-  'CHAMIA 700 G PISTACHE',
-  'CHAMIA 700 G VANILLE',
-  'CHAMIA 3KG PISTACHE',
-  'CHAMIA 3KG VANILLE',
+export const PRODUCT_VARIANTS = [
+  'AMANDE 30 G',
+  'AMANDE 70 G',
+  'AMANDE 140 G',
+  'CAJOU 30 G',
+  'CAJOU 70 G',
+  'CAJOU 140 G',
+  'PISTACHE 30 G',
+  'PISTACHE 70 G',
+  'PISTACHE 140 G',
+  'MIX GOLD 70 G',
+  'MIX GOLD 140 G',
+  'MIX CLASSIC 70 G',
+  'MIX CLASSIC 140 G',
+  'MIX ENERGY 70 G',
+  'MIX ENERGY 140 G',
 ];
 
 interface FormData {
@@ -136,7 +143,7 @@ export default function RegistrationForm({ onComplete }: { onComplete: (data: Fo
             Détail des Produits Achetés *
           </label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem', marginBottom: '1rem' }}>
-            {CHAMIA_VARIANTS.map(variant => (
+            {PRODUCT_VARIANTS.map(variant => (
               <div key={variant} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{variant}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
